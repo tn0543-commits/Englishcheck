@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* --- Core Styling & Background --- */
+        body {
+            font-family: 'Nunito', sans-serif;
+            /* Vibrant, race-game inspired gradient background */
+            background: linear-gradient(135deg, #FF3366, #FF9933, #33CCFF, #9933FF);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+            position: relative;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Fun Fonts */
+        h1, h2, h3, .heading-font {
+            font-family: 'Bangers', 'Fredoka One', cursive;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+        }
+
+        /* --- Floating Background Shapes --- */
+        .bg-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bg-shape {
+            position: absolute;
+            display: block;
+            background: rgba(255, 255, 255, 0.2);
+            animation: float 25s linear infinite;
+            bottom: -150px;
+            backdrop-filter: blur(2px);
+        }
+
+        /* Various shapes for background */
+        .shape-circle { border-radius: 50%; }
+        .shape-square { border-radius: 10%; }
+        .shape-triangle {
+            background: transparent;
+            width: 0;
+            height: 0;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-bottom: 86.6px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+                border-radius: 0;
+            }
+            100% {
+                transform: translateY(-1000px) rotate(720deg);
+                opacity: 0;
+                border-radius: 50%;
+            }
+        }
+
+        /* Position specific floating shapes */
+        .bg-shapes li:nth-child(1) { left: 25%; width: 80px; height: 80px; animation-delay: 0s; }
+        .bg-shapes li:nth-child(2) { left: 10%; width: 20px; height: 20px; animation-delay: 2s; animation-duration: 12s; }
+        .bg-shapes li:nth-child(3) { left: 70%; width: 20px; height: 20px; animation-delay: 4s; }
+        .bg-shapes li:nth-child(4) { left: 40%; width: 60px; height: 60px; animation-delay: 0s; animation-duration: 18s; }
+        .bg-shapes li:nth-child(5) { left: 65%; width: 20px; height: 20px; animation-delay: 0s; }
+        .bg-shapes li:nth-child(6) { left: 75%; width: 110px; height: 110px; animation-delay: 3s; }
+        .bg-shapes li:nth-child(7) { left: 35%; width: 150px; height: 150px; animation-delay: 7s; }
+        .bg-shapes li:nth-child(8) { left: 50%; width: 25px; height: 25px; animation-delay: 15s; animation-duration: 45s; }
+        .bg-shapes li:nth-child(9) { left: 20%; width: 15px; height: 15px; animation-delay: 2s; animation-duration: 35s; }
+        .bg-shapes li:nth-child(10) { left: 85%; width: 150px; height: 150px; animation-delay: 0s; animation-duration: 11s; }
+
+        /* --- UI Elements --- */
+        .btn {
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 rgba(0,0,0,0.2);
+            filter: brightness(1.1);
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border: 6px solid #333;
+            border-radius: 24px;
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- Matching Game Styles --- */
+        .match-item {
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            border: 4px solid #333;
+            box-shadow: 4px 4px 0 #333;
+        }
+        .match-item:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 #333;
+        }
+        .match-item.selected {
+            border-color: #3b82f6; 
+            background-color: #eff6ff;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+        }
+        .match-item.correct {
+            background-color: #4ade80; /* Brighter Green */
+            color: #166534;
+            border-color: #166534;
+            pointer-events: none;
+            transform: scale(0.95);
+            box-shadow: none;
+            opacity: 0.8;
+        }
+        .match-item.wrong {
+            background-color: #f87171; /* Brighter Red */
+            color: white;
+            border-color: #991b1b;
+            animation: shake 0.4s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px) rotate(-2deg); }
+            40%, 80% { transform: translateX(8px) rotate(2deg); }
+        }
+
+        /* --- Drawing Canvas --- */
+        #drawingCanvas {
+            cursor: crosshair;
+            touch-action: none;
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .color-btn.active {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 4px #333;
+        }
+        
+        /* --- Utilities --- */
+        #confetti {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            display: none;
+        }
+
+        .svg-shape {
+            width: 140px;
+            height: 140px;
+            fill: currentColor;
+            filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.2));
+        }
+
+        /* --- Interactive Crew Selection Styles --- */
+        .crew-card {
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+        }
+        .crew-card:hover {
+            transform: translateY(-8px) scale(1.03);
+        }
+        .crew-card:hover .crew-car-svg {
+            transform: translateX(4px) scale(1.08);
+        }
+        .crew-card.selected {
+            transform: translateY(-6px) scale(1.05);
+            box-shadow: 0 0 25px rgba(250, 204, 21, 0.9), 0 8px 0 rgba(0,0,0,0.3);
+            border-color: #facc15 !important;
+        }
+        .crew-card.selected .crew-car-svg {
+            animation: vroomRumble 0.3s infinite alternate ease-in-out;
+        }
+        @keyframes vroomRumble {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-3px) rotate(1deg); }
+            100% { transform: translateY(2px) rotate(-1deg); }
+        }
+        .exhaust-flame {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .crew-card.selected .exhaust-flame {
+            opacity: 1;
+            animation: flameFlicker 0.15s infinite alternate;
+        }
+        @keyframes flameFlicker {
+            0% { transform: scale(0.8) translateX(0); opacity: 0.7; }
+            100% { transform: scale(1.2) translateX(-3px); opacity: 1; }
+        }
+
+        /* Checkerboard pattern for a racing feel */
+        .checkerboard-border {
+            background-image: linear-gradient(45deg, #333 25%, transparent 25%), 
+                              linear-gradient(-45deg, #333 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #333 75%), 
+                              linear-gradient(-45deg, transparent 75%, #333 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6">
+
+    <!-- Floating Background Shapes -->
+    <ul class="bg-shapes">
+        <li class="bg-shape shape-square"></li>
+        <li class="bg-shape shape-circle"></li>
+        <li class="bg-shape shape-square"></li>
+        <li class="bg-shape shape-circle"></li>
+        <li class="bg-shape shape-square"></li>
+        <li class="bg-shape shape-circle"></li>
+        <li class="bg-shape shape-square"></li>
+        <li class="bg-shape shape-circle"></li>
+        <li class="bg-shape shape-square"></li>
+        <li class="bg-shape shape-circle"></li>
+    </ul>
+
+    <!-- Header / Navigation -->
+    <header class="flex justify-between items-center mb-6 panel p-3 sm:p-4 checkerboard-border">
+        <div class="bg-white rounded-xl w-full flex justify-between items-center p-2 gap-2">
+            <button id="homeBtn" class="btn bg-blue-600 hover:bg-blue-700 text-white font-black px-3 py-2 rounded-xl flex items-center gap-1.5 hidden text-sm sm:text-base border-2 border-blue-900 shadow" aria-label="Home">
+                <span class="text-lg">🏠</span> <span class="hidden sm:inline">MAIN MENU</span>
+            </button>
+            <h1 class="text-3xl sm:text-5xl text-center flex-1 text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-yellow-500 to-blue-600 heading-font" style="-webkit-text-stroke: 1px black;">🏁 SHAPE CHALLENGE 🏁</h1>
+            <div id="scoreDisplay" class="heading-font text-2xl sm:text-3xl text-yellow-400 bg-gray-900 border-4 border-gray-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl hidden shadow-inner whitespace-nowrap">
+                PTS: <span id="currentScore" class="text-white">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 panel p-4 sm:p-8 flex flex-col overflow-hidden">
+        
+        <!-- Screen 1: Home / Setup -->
+        <div id="homeScreen" class="flex flex-col items-center justify-center h-full space-y-6 animate-[fadeIn_0.5s_ease-out] overflow-y-auto max-h-full py-2">
+            <div class="text-center">
+                <h2 class="text-4xl sm:text-5xl heading-font text-purple-700 mb-1 transform -rotate-1">🏎️ PIT STOP CREW GARAGE 🏁</h2>
+                <p class="text-lg font-bold text-gray-600">Pick your team to rev up your shape racing engine!</p>
+            </div>
+            
+            <div id="crewSelectionBox" class="bg-gradient-to-b from-gray-900 to-gray-800 border-4 border-black p-4 sm:p-6 rounded-3xl w-full max-w-4xl text-center relative shadow-2xl transition-all duration-300">
+                <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-yellow-400 border-4 border-black text-black px-6 py-1 rounded-full heading-font text-xl sm:text-2xl shadow-md flex items-center gap-2">
+                    ⚡ CHOOSE YOUR CREW ⚡
+                </div>
+                
+                <!-- Crew Cards Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 mt-3">
+                    
+                    <!-- Crew 701 -->
+                    <div class="crew-card class-btn bg-gradient-to-b from-red-500 to-red-700 border-4 border-red-900 rounded-2xl p-3 text-white flex flex-col items-center justify-between shadow-lg" data-class="701">
+                        <span class="bg-black/40 text-yellow-300 heading-font text-xs sm:text-sm px-2 py-0.5 rounded-full mb-1">RED ROCKETS</span>
+                        <div class="relative my-2">
+                            <svg class="crew-car-svg w-16 h-12 sm:w-20 sm:h-14 transition-transform duration-200" viewBox="0 0 100 60">
+                                <path d="M10,40 L25,20 L65,20 L85,35 L95,40 L95,48 L5,48 Z" fill="#ef4444" stroke="#7f1d1d" stroke-width="4"/>
+                                <circle cx="30" cy="48" r="10" fill="#18181b" stroke="#facc15" stroke-width="3"/>
+                                <circle cx="75" cy="48" r="10" fill="#18181b" stroke="#facc15" stroke-width="3"/>
+                                <path d="M35,22 L55,22 L65,35 L35,35 Z" fill="#60a5fa" opacity="0.8"/>
+                                <polygon points="0,38 -15,34 -15,46" fill="#f97316" class="exhaust-flame"/>
+                            </svg>
+                        </div>
+                        <div class="heading-font text-3xl sm:text-4xl text-yellow-300 drop-shadow">701</div>
+                        <span class="text-[10px] font-black uppercase bg-red-950/60 px-2 py-0.5 rounded-md mt-1">Speed: 100%</span>
+                    </div>
+
+                    <!-- Crew 702 -->
+                    <div class="crew-card class-btn bg-gradient-to-b from-blue-500 to-blue-700 border-4 border-blue-900 rounded-2xl p-3 text-white flex flex-col items-center justify-between shadow-lg" data-class="702">
+                        <span class="bg-black/40 text-yellow-300 heading-font text-xs sm:text-sm px-2 py-0.5 rounded-full mb-1">BLUE THUNDER</span>
+                        <div class="relative my-2">
+                            <svg class="crew-car-svg w-16 h-12 sm:w-20 sm:h-14 transition-transform duration-200" viewBox="0 0 100 60">
+                                <path d="M12,40 L30,18 L70,18 L88,38 L95,40 L95,48 L5,48 Z" fill="#3b82f6" stroke="#1e3a8a" stroke-width="4"/>
+                                <circle cx="28" cy="48" r="10" fill="#18181b" stroke="#60a5fa" stroke-width="3"/>
+                                <circle cx="76" cy="48" r="10" fill="#18181b" stroke="#60a5fa" stroke-width="3"/>
+                                <path d="M38,20 L60,20 L68,36 L38,36 Z" fill="#93c5fd" opacity="0.8"/>
+                                <polygon points="0,38 -15,34 -15,46" fill="#38bdf8" class="exhaust-flame"/>
+                            </svg>
+                        </div>
+                        <div class="heading-font text-3xl sm:text-4xl text-yellow-300 drop-shadow">702</div>
+                        <span class="text-[10px] font-black uppercase bg-blue-950/60 px-2 py-0.5 rounded-md mt-1">Turbo: MAX</span>
+                    </div>
+
+                    <!-- Crew 703 -->
+                    <div class="crew-card class-btn bg-gradient-to-b from-emerald-500 to-emerald-700 border-4 border-emerald-900 rounded-2xl p-3 text-white flex flex-col items-center justify-between shadow-lg" data-class="703">
+                        <span class="bg-black/40 text-yellow-300 heading-font text-xs sm:text-sm px-2 py-0.5 rounded-full mb-1">GREEN VIPERS</span>
+                        <div class="relative my-2">
+                            <svg class="crew-car-svg w-16 h-12 sm:w-20 sm:h-14 transition-transform duration-200" viewBox="0 0 100 60">
+                                <path d="M8,42 L22,22 L62,22 L82,36 L96,42 L96,48 L4,48 Z" fill="#10b981" stroke="#064e3b" stroke-width="4"/>
+                                <circle cx="26" cy="48" r="10" fill="#18181b" stroke="#34d399" stroke-width="3"/>
+                                <circle cx="74" cy="48" r="10" fill="#18181b" stroke="#34d399" stroke-width="3"/>
+                                <path d="M32,24 L52,24 L62,36 L32,36 Z" fill="#a7f3d0" opacity="0.8"/>
+                                <polygon points="0,38 -15,34 -15,46" fill="#facc15" class="exhaust-flame"/>
+                            </svg>
+                        </div>
+                        <div class="heading-font text-3xl sm:text-4xl text-yellow-300 drop-shadow">703</div>
+                        <span class="text-[10px] font-black uppercase bg-emerald-950/60 px-2 py-0.5 rounded-md mt-1">Agility: 100</span>
+                    </div>
+
+                    <!-- Crew 704 -->
+                    <div class="crew-card class-btn bg-gradient-to-b from-amber-400 to-amber-600 border-4 border-amber-800 rounded-2xl p-3 text-gray-900 flex flex-col items-center justify-between shadow-lg" data-class="704">
+                        <span class="bg-black/60 text-yellow-300 heading-font text-xs sm:text-sm px-2 py-0.5 rounded-full mb-1">GOLD RACERS</span>
+                        <div class="relative my-2">
+                            <svg class="crew-car-svg w-16 h-12 sm:w-20 sm:h-14 transition-transform duration-200" viewBox="0 0 100 60">
+                                <path d="M10,40 L28,18 L68,18 L86,36 L95,40 L95,48 L5,48 Z" fill="#fbbf24" stroke="#78350f" stroke-width="4"/>
+                                <circle cx="28" cy="48" r="10" fill="#18181b" stroke="#f59e0b" stroke-width="3"/>
+                                <circle cx="76" cy="48" r="10" fill="#18181b" stroke="#f59e0b" stroke-width="3"/>
+                                <path d="M36,20 L58,20 L66,36 L36,36 Z" fill="#fef08a" opacity="0.85"/>
+                                <polygon points="0,38 -15,34 -15,46" fill="#ef4444" class="exhaust-flame"/>
+                            </svg>
+                        </div>
+                        <div class="heading-font text-3xl sm:text-4xl text-black drop-shadow">704</div>
+                        <span class="text-[10px] font-black uppercase bg-amber-950/80 text-yellow-300 px-2 py-0.5 rounded-md mt-1">Power: HIGH</span>
+                    </div>
+
+                    <!-- Crew 705 -->
+                    <div class="crew-card class-btn bg-gradient-to-b from-purple-600 to-purple-800 border-4 border-purple-950 rounded-2xl p-3 text-white flex flex-col items-center justify-between shadow-lg col-span-2 sm:col-span-1 max-w-[200px] sm:max-w-none mx-auto w-full" data-class="705">
+                        <span class="bg-black/40 text-yellow-300 heading-font text-xs sm:text-sm px-2 py-0.5 rounded-full mb-1">PURPLE NITRO</span>
+                        <div class="relative my-2">
+                            <svg class="crew-car-svg w-16 h-12 sm:w-20 sm:h-14 transition-transform duration-200" viewBox="0 0 100 60">
+                                <path d="M10,40 L25,20 L65,20 L85,35 L95,40 L95,48 L5,48 Z" fill="#a855f7" stroke="#4c1d95" stroke-width="4"/>
+                                <circle cx="28" cy="48" r="10" fill="#18181b" stroke="#c084fc" stroke-width="3"/>
+                                <circle cx="76" cy="48" r="10" fill="#18181b" stroke="#c084fc" stroke-width="3"/>
+                                <path d="M35,22 L55,22 L65,35 L35,35 Z" fill="#e9d5ff" opacity="0.8"/>
+                                <polygon points="0,38 -15,34 -15,46" fill="#ec4899" class="exhaust-flame"/>
+                            </svg>
+                        </div>
+                        <div class="heading-font text-3xl sm:text-4xl text-yellow-300 drop-shadow">705</div>
+                        <span class="text-[10px] font-black uppercase bg-purple-950/60 px-2 py-0.5 rounded-md mt-1">Boost: NITRO</span>
+                    </div>
+
+                </div>
+
+                <!-- Live Selected Pit Pass Preview -->
+                <div id="crewBadgePreview" class="mt-4 bg-gray-950/80 border-2 border-dashed border-gray-700 rounded-2xl p-3 flex flex-col sm:flex-row items-center justify-between text-left gap-3 transition-all duration-300">
+                    <div class="flex items-center gap-3">
+                        <div id="badgeIcon" class="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center text-2xl border-2 border-gray-600">🏎️</div>
+                        <div>
+                            <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">RACER PIT PASS</div>
+                            <div id="badgeTitle" class="heading-font text-2xl text-yellow-400">NO CREW SELECTED</div>
+                        </div>
+                    </div>
+                    <div id="badgeStatus" class="text-xs font-black bg-gray-800 text-gray-400 px-3 py-1.5 rounded-lg uppercase tracking-wide border border-gray-700">
+                        Tap a car above!
+                    </div>
+                </div>
+            </div>
+
+            <button id="startMatchBtn" class="btn heading-font bg-green-500 hover:bg-green-600 text-white text-3xl sm:text-4xl py-4 sm:py-5 px-10 sm:px-12 rounded-2xl border-4 border-green-800 shadow-xl transition-all duration-200 flex items-center gap-3">
+                <span>START CHALLENGE 1</span> 🏁
+            </button>
+            
+            <button id="showLeaderboardBtn" class="btn bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-full border-2 border-purple-900 text-sm shadow">
+                🏆 View Leaderboard
+            </button>
+        </div>
+
+        <!-- Screen 2: Matching Game -->
+        <div id="matchingScreen" class="hidden flex-col h-full">
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-3 gap-2">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-3xl heading-font text-blue-700 bg-blue-100 px-4 py-1 rounded-lg border-2 border-blue-300">STAGE 1: MATCH-UP</h2>
+                    <button class="quitHomeBtn btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold px-3 py-1 rounded-lg border-2 border-gray-400 text-sm flex items-center gap-1">
+                        🏠 Menu
+                    </button>
+                </div>
+                
+                <div class="flex items-center gap-4 w-full sm:w-auto">
+                     <div class="flex-1 sm:flex-none w-full sm:w-48 bg-gray-200 rounded-full h-6 border-2 border-gray-400 overflow-hidden relative">
+                        <div id="matchProgress" class="bg-gradient-to-r from-blue-400 to-purple-500 h-full transition-all duration-300 w-0"></div>
+                        <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-800" id="matchProgressText">0 / 12</span>
+                    </div>
+                    <div class="text-3xl heading-font bg-gray-900 text-white px-4 py-1 rounded-lg border-4 border-red-500 flex items-center gap-2 min-w-[120px] justify-center">
+                        ⏳ <span id="matchTimer" class="text-red-400">7.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Single Slide Display: Big Word Card + Big Shape Options -->
+            <div class="flex-1 flex flex-col justify-around items-center bg-gray-50 rounded-3xl p-4 sm:p-6 border-4 border-dashed border-gray-300">
+                <!-- Big Word Display Card -->
+                <div id="singleWordCard" class="bg-white border-4 border-black rounded-2xl p-4 sm:p-6 text-center shadow-lg w-full max-w-3xl transform transition-all duration-300">
+                    <div id="matchWordTitle" class="text-4xl sm:text-6xl font-black heading-font text-blue-600 uppercase tracking-wide mb-2">SQUARE</div>
+                    <div id="matchWordDesc" class="text-xl sm:text-3xl font-bold text-gray-700">4 equal sides, 4 corners</div>
+                </div>
+
+                <!-- Big Shape Choice Buttons -->
+                <div class="w-full max-w-4xl mt-2">
+                    <p class="text-center text-gray-600 font-extrabold text-lg sm:text-2xl mb-3 heading-font">TAP THE CORRECT SHAPE BELOW:</p>
+                    <div id="shapeOptionsContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 justify-items-center">
+                        <!-- Populated dynamically by JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 flex justify-end h-16">
+                <button id="nextMatchBtn" class="btn bg-blue-500 hover:bg-blue-600 text-white text-2xl py-3 px-8 rounded-xl hidden border-4 border-blue-800 heading-font w-full sm:w-auto">
+                    NEXT SHAPE ⏩
+                </button>
+                 <button id="finishMatchBtn" class="btn bg-green-500 hover:bg-green-600 text-white text-2xl py-3 px-8 rounded-xl hidden border-4 border-green-800 heading-font w-full sm:w-auto animate-bounce">
+                    STAGE 2: DRAWING 🎨
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen 3: Drawing Game -->
+        <div id="drawingScreen" class="hidden flex-col h-full">
+             <div class="flex flex-col sm:flex-row justify-between items-center mb-2 gap-2">
+                <div class="flex items-center gap-3">
+                     <h2 class="text-3xl heading-font text-purple-700 bg-purple-100 px-4 py-1 rounded-lg border-2 border-purple-300 hidden sm:block">STAGE 2: DRAW</h2>
+                     <button class="quitHomeBtn btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold px-3 py-1 rounded-lg border-2 border-gray-400 text-sm flex items-center gap-1">
+                        🏠 Menu
+                     </button>
+                     <div class="text-2xl font-bold text-gray-800 bg-yellow-100 px-4 py-2 rounded-xl border-4 border-yellow-400">
+                        Draw a: <span id="targetShapeName" class="text-3xl heading-font text-red-600 uppercase">Circle</span>
+                    </div>
+                </div>
+                
+                <div class="text-3xl heading-font bg-gray-900 text-white px-6 py-2 rounded-lg border-4 border-red-500 flex items-center gap-2">
+                    ⏳ <span id="drawTimer" class="text-red-400">10.0</span>
+                </div>
+            </div>
+
+            <!-- Drawing Area -->
+            <div class="flex-1 bg-white border-4 border-gray-800 rounded-2xl relative flex flex-col shadow-inner overflow-hidden mt-2">
+                <canvas id="drawingCanvas" class="flex-1 w-full h-full"></canvas>
+                
+                <!-- Drawing Tools -->
+                <div class="bg-gray-200 p-2 sm:p-3 flex flex-wrap justify-between items-center border-t-4 border-gray-800 gap-2">
+                    <div class="flex gap-2">
+                        <button id="undoBtn" class="btn bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold py-2 px-3 sm:px-4 rounded-lg flex items-center gap-1 border-2 border-yellow-600">
+                            ↩️ Undo
+                        </button>
+                        <button id="clearBtn" class="btn bg-red-400 hover:bg-red-500 text-white font-bold py-2 px-3 sm:px-4 rounded-lg flex items-center gap-1 border-2 border-red-600">
+                            🗑️ Clear
+                        </button>
+                    </div>
+                     <div class="flex gap-2 items-center bg-white px-3 py-1 rounded-lg border-2 border-gray-300">
+                         <span class="text-gray-500 font-bold hidden sm:inline">Ink:</span>
+                         <button class="color-btn w-8 h-8 rounded-full bg-black border-2 border-white active" data-color="#000000"></button>
+                         <button class="color-btn w-8 h-8 rounded-full bg-red-500 border-2 border-white" data-color="#ef4444"></button>
+                         <button class="color-btn w-8 h-8 rounded-full bg-blue-500 border-2 border-white" data-color="#3b82f6"></button>
+                         <button class="color-btn w-8 h-8 rounded-full bg-green-500 border-2 border-white" data-color="#10b981"></button>
+                         <button class="color-btn w-8 h-8 rounded-full bg-purple-500 border-2 border-white" data-color="#a855f7"></button>
+                    </div>
+                    <button id="submitDrawBtn" class="btn bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg text-lg border-2 border-green-700 w-full sm:w-auto">
+                        DONE! ✔️
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Result Overlay for Drawing -->
+             <div id="drawResultOverlay" class="absolute inset-4 bg-white/95 hidden flex-col items-center justify-center z-20 rounded-3xl border-8 border-gray-800 backdrop-blur-sm">
+                <h3 id="drawResultText" class="text-6xl heading-font text-center mb-6 drop-shadow-md"></h3>
+                <p id="drawFeedbackText" class="text-2xl font-bold text-gray-600 mb-8"></p>
+                <button id="nextDrawBtn" class="btn bg-blue-500 hover:bg-blue-600 text-white text-3xl py-4 px-10 rounded-2xl border-4 border-blue-800 heading-font">
+                    NEXT SHAPE ⏩
+                </button>
+                 <button id="finishGameBtn" class="btn bg-yellow-400 hover:bg-yellow-500 text-black text-3xl py-4 px-10 rounded-2xl hidden border-4 border-yellow-600 heading-font animate-bounce">
+                    FINISH LINE! 🏁
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen 4: Leaderboard / Results -->
+        <div id="leaderboardScreen" class="hidden flex-col h-full items-center justify-center">
+            <h2 class="text-6xl heading-font text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 mb-2" style="-webkit-text-stroke: 2px black;">RACE COMPLETE!</h2>
+            <div class="bg-gray-900 border-4 border-gray-700 px-8 py-3 rounded-2xl mb-8 shadow-xl">
+                 <h3 id="finalScoreDisplay" class="text-4xl heading-font text-yellow-400">TOTAL PTS: <span class="text-white">0</span></h3>
+            </div>
+            
+            <div class="bg-white p-6 rounded-3xl border-8 border-gray-800 shadow-2xl w-full max-w-2xl max-h-[50vh] flex flex-col">
+                <div class="flex justify-between items-center mb-4 border-b-4 border-gray-200 pb-4 gap-2 flex-wrap">
+                     <h3 class="text-3xl heading-font text-gray-800">🏆 HALL OF FAME</h3>
+                     <div class="flex items-center gap-2">
+                        <select id="leaderboardClassSelect" class="border-4 border-blue-400 rounded-xl p-2 font-bold text-xl bg-blue-50 focus:outline-none focus:border-blue-600">
+                            <option value="all">🌎 All Crews</option>
+                            <option value="701">Crew 701</option>
+                            <option value="702">Crew 702</option>
+                            <option value="703">Crew 703</option>
+                            <option value="704">Crew 704</option>
+                            <option value="705">Crew 705</option>
+                        </select>
+                        <button id="clearLeaderboardBtn" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-2 rounded-xl text-sm border-2 border-red-700">
+                            🗑️ Clear
+                        </button>
+                     </div>
+                </div>
+
+                <div class="overflow-y-auto flex-1 bg-gray-50 rounded-xl border-2 border-gray-200">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-800 text-white sticky top-0">
+                            <tr>
+                                <th class="p-3 heading-font text-xl">Pos</th>
+                                <th class="p-3 heading-font text-xl">Crew</th>
+                                <th class="p-3 heading-font text-xl">Pts</th>
+                                <th class="p-3 heading-font text-xl hidden sm:table-cell">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-4 mt-6 justify-center">
+                <button id="playAgainBtn" class="btn bg-green-500 hover:bg-green-600 text-white text-2xl sm:text-3xl py-3 sm:py-4 px-8 sm:px-12 rounded-full border-4 border-green-800 heading-font shadow-xl">
+                    RACE AGAIN 🔄
+                </button>
+                <button class="quitHomeBtn btn bg-blue-500 hover:bg-blue-600 text-white text-2xl sm:text-3xl py-3 sm:py-4 px-8 sm:px-12 rounded-full border-4 border-blue-800 heading-font shadow-xl">
+                    🏠 MAIN MENU
+                </button>
+            </div>
+        </div>
+
+    </main>
+    
+    <canvas id="confetti"></canvas>
+
+    <script>
+        // --- STREAMING_CHUNK:Initializing Web Audio Sound Effects... ---
+        // Audio Synthesizer for UI & Engine Sound Effects
+        const AudioFX = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+            playRev() {
+                try {
+                    this.init();
+                    const ctx = this.ctx;
+                    if (ctx.state === 'suspended') ctx.resume();
+
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(100, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(320, ctx.currentTime + 0.15);
+                    osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.35);
+
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.35);
+                } catch(e) {}
+            },
+            playClick() {
+                try {
+                    this.init();
+                    const ctx = this.ctx;
+                    if (ctx.state === 'suspended') ctx.resume();
+
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.08);
+
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.08);
+                } catch(e) {}
+            }
+        };
+
+        // Crew Metadata Map
+        const crewDataMap = {
+            '701': { name: 'CREW 701 - RED ROCKETS', icon: '🚀', speed: 'MAX ACCELERATION', color: 'text-red-400', border: 'border-red-500' },
+            '702': { name: 'CREW 702 - BLUE THUNDER', icon: '⚡', speed: 'LIGHTNING BOOST', color: 'text-blue-400', border: 'border-blue-500' },
+            '703': { name: 'CREW 703 - GREEN VIPERS', icon: '🐍', speed: 'SUPER AGILITY', color: 'text-emerald-400', border: 'border-emerald-500' },
+            '704': { name: 'CREW 704 - GOLD CHAMPIONS', icon: '🏆', speed: 'CHAMPION POWER', color: 'text-yellow-400', border: 'border-amber-500' },
+            '705': { name: 'CREW 705 - PURPLE NITRO', icon: '💜', speed: 'TURBO CHARGED', color: 'text-purple-400', border: 'border-purple-500' }
+        };
+
+        // --- Game Data ---
+        // Enhanced shape data with colorful SVG vectors
+        const shapeData = [
+            { id: 'square', name: 'Square', desc: '4 equal sides, 4 corners', color: 'text-red-600', 
+              svg: '<svg viewBox="0 0 100 100" class="svg-shape"><rect x="15" y="15" width="70" height="70" rx="8" stroke="currentColor" stroke-width="8" fill="currentColor" fill-opacity="0.3"/></svg>' },
+            { id: 'rectangle', name: 'Rectangle', desc: '4 sides, opposite sides equal', color: 'text-blue-600',
+              svg: '<svg viewBox="0 0 100 100" class="svg-shape"><rect x="10" y="30" width="80" height="40" rx="6" stroke="currentColor" stroke-width="8" fill="currentColor" fill-opacity="0.3"/></svg>' },
+            { id: 'triangle', name: 'Triangle', desc: '3 sides', color: 'text-green-600',
+              svg: '<svg viewBox="0 0 100 100" class="svg-shape"><polygon points="50,15 85,85 15,85" stroke="currentColor" stroke-width="8" stroke-linejoin="round" fill="currentColor" fill-opacity="0.3"/></svg>' },
+            { id: 'circle', name: 'Circle', desc: 'Round, no corners', color: 'text-yellow-500',
+              svg: '<svg viewBox="0 0 100 100" class="svg-shape"><circle cx="50" cy="50" r="35" stroke="currentColor" stroke-width="8" fill="currentColor" fill-opacity="0.3"/></svg>' },
+            { id: 'oval', name: 'Oval / Ellipse', desc: 'Stretched circle', color: 'text-purple-600',
+              svg: '<svg viewBox="0 0 100 100" class="svg-shape"><ellipse cx="50" cy="50" rx="40" ry="25" stroke="currentColor" stroke-width="8" fill="currentColor" fill-opacity="0.3"/></svg>' },
+            { id: 'pentagon', name: 'Pentagon', desc: '5 sides', color: 'text-orange-600',
+              svg: '<svg viewBox="0 0 100 100" class="svg-shape"><polygon points="50,15 85,40 70,85 30,85 15,40" stroke="currentColor" stroke-width="8" stroke-linejoin="round" fill="currentColor" fill-opacity="0.3"/></svg>' },
+            { id: 'hexagon', name: 'Hexagon', desc: '6 sides', color: 'text-teal-600',
+              svg: '<svg viewBox="0 0 100 100" class="svg-shape"><polygon points="50,15 80,35 80,65 50,85 20,65 20,35" stroke="currentColor" stroke-width="8" stroke-linejoin="round" fill="currentColor" fill-opacity="0.3"/></svg>' },
+            { id: 'heptagon', name: 'Heptagon', desc: '7 sides', color: 'text-indigo-600',
+              svg: '<svg viewBox="0 0 100 100" class="svg-shape"><polygon points="50,15 80,30 90,60 70,85 30,85 10,60 20,30" stroke="currentColor" stroke-width="8" stroke-linejoin="round" fill="currentColor" fill-opacity="0.3"/></svg>' },
+            { id: 'octagon', name: 'Octagon', desc: '8 sides', color: 'text-rose-600',
+              svg: '<svg viewBox="0 0 100 100" class="svg-shape"><polygon points="35,15 65,15 85,35 85,65 65,85 35,85 15,65 15,35" stroke="currentColor" stroke-width="8" stroke-linejoin="round" fill="currentColor" fill-opacity="0.3"/></svg>' },
+            { id: 'star', name: 'Star', desc: 'Multiple points', color: 'text-pink-600',
+              svg: '<svg viewBox="0 0 100 100" class="svg-shape"><polygon points="50,10 60,35 88,35 65,52 74,78 50,62 26,78 35,52 12,35 40,35" stroke="currentColor" stroke-width="8" stroke-linejoin="round" fill="currentColor" fill-opacity="0.3"/></svg>' },
+            { id: 'diamond', name: 'Diamond', desc: '4 equal sides (Rhombus)', color: 'text-cyan-600',
+              svg: '<svg viewBox="0 0 100 100" class="svg-shape"><polygon points="50,15 85,50 50,85 15,50" stroke="currentColor" stroke-width="8" stroke-linejoin="round" fill="currentColor" fill-opacity="0.3"/></svg>' },
+            { id: 'trapezoid', name: 'Trapezoid', desc: '4 sides, one pair parallel', color: 'text-lime-600',
+              svg: '<svg viewBox="0 0 100 100" class="svg-shape"><polygon points="30,25 70,25 85,75 15,75" stroke="currentColor" stroke-width="8" stroke-linejoin="round" fill="currentColor" fill-opacity="0.3"/></svg>' }
+        ];
+
+        // Specific order requested for drawing
+        const drawingSequence = ['circle', 'triangle', 'star', 'diamond', 'square', 'oval', 'rectangle'];
+
+        // State Variables
+        let currentClass = null;
+        let score = 0;
+        let currentScreen = 'homeScreen';
+        let timerInterval = null;
+        
+        // Matching State
+        let currentMatchRound = 0;
+        let isSlideAnswered = false;
+        let matchTimerValue = 7.0;
+        let totalMatchedPairs = 0;
+        
+        // Drawing State
+        let currentDrawingIndex = 0;
+        let drawTimerValue = 10.0;
+        
+        // Canvas State
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        let isDrawing = false;
+        let paths = []; 
+        let currentPath = null;
+        let strokeColor = '#000000';
+        let strokeWidth = 8; // Thicker for smartboard feel
+        let canvasRect = null;
+
+        // Leaderboard (LocalStorage) - Empty by default
+        let leaderboard = JSON.parse(localStorage.getItem('shapeChallengeRaceBoard')) || [];
+
+        const screens = {
+            homeScreen: document.getElementById('homeScreen'),
+            matchingScreen: document.getElementById('matchingScreen'),
+            drawingScreen: document.getElementById('drawingScreen'),
+            leaderboardScreen: document.getElementById('leaderboardScreen')
+        };
+        
+        const homeBtn = document.getElementById('homeBtn');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const currentScoreEl = document.getElementById('currentScore');
+        const startMatchBtn = document.getElementById('startMatchBtn');
+        const classBtns = document.querySelectorAll('.class-btn');
+
+        function showScreen(screenId) {
+            Object.values(screens).forEach(screen => {
+                screen.classList.add('hidden');
+                screen.classList.remove('flex');
+            });
+            screens[screenId].classList.remove('hidden');
+            screens[screenId].classList.add('flex');
+            currentScreen = screenId;
+
+            if (screenId === 'homeScreen') {
+                homeBtn.classList.add('hidden');
+                scoreDisplay.classList.add('hidden');
+            } else {
+                homeBtn.classList.remove('hidden');
+                scoreDisplay.classList.remove('hidden');
+            }
+        }
+
+        function updateScore(points) {
+            score += points;
+            currentScoreEl.textContent = score;
+            
+            // Pop effect
+            const parent = currentScoreEl.parentElement;
+            parent.classList.add('scale-110', 'bg-yellow-500');
+            setTimeout(() => {
+                parent.classList.remove('scale-110', 'bg-yellow-500');
+            }, 200);
+        }
+
+        function shuffleArray(array) {
+            let curId = array.length;
+            while (0 !== curId) {
+                let randId = Math.floor(Math.random() * curId);
+                curId -= 1;
+                let tmp = array[curId];
+                array[curId] = array[randId];
+                array[randId] = tmp;
+            }
+            return array;
+        }
+
+        function stopTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+        }
+
+        // --- STREAMING_CHUNK:Handling Crew Selection Logic... ---
+        classBtns.forEach(btn => {
+            btn.addEventListener('mouseenter', () => AudioFX.playClick());
+            btn.addEventListener('click', (e) => {
+                AudioFX.playRev();
+
+                classBtns.forEach(b => {
+                    b.classList.remove('selected');
+                });
+                
+                const target = e.currentTarget;
+                target.classList.add('selected');
+                
+                currentClass = target.dataset.class;
+                startMatchBtn.classList.add('animate-bounce');
+                
+                const box = document.getElementById('crewSelectionBox');
+                box.classList.remove('border-red-500', 'bg-red-900/30');
+
+                // Update Pit Pass Badge Preview
+                const info = crewDataMap[currentClass];
+                if (info) {
+                    const badgeTitle = document.getElementById('badgeTitle');
+                    const badgeIcon = document.getElementById('badgeIcon');
+                    const badgeStatus = document.getElementById('badgeStatus');
+                    const badgePreview = document.getElementById('crewBadgePreview');
+
+                    badgeTitle.textContent = info.name;
+                    badgeTitle.className = `heading-font text-xl sm:text-2xl ${info.color}`;
+                    badgeIcon.textContent = info.icon;
+                    badgeStatus.textContent = info.speed;
+                    badgeStatus.className = "text-xs font-black bg-green-500 text-black px-3 py-1.5 rounded-lg uppercase tracking-wide shadow animate-pulse";
+                    badgePreview.className = `mt-4 bg-gray-950 border-2 rounded-2xl p-3 flex flex-col sm:flex-row items-center justify-between text-left gap-3 transition-all duration-300 ${info.border}`;
+                }
+            });
+        });
+
+        startMatchBtn.addEventListener('click', () => {
+            if (!currentClass) {
+                AudioFX.playRev();
+                const box = document.getElementById('crewSelectionBox');
+                box.classList.add('border-red-500', 'bg-red-900/30');
+                box.style.animation = 'none'; 
+                void box.offsetWidth; // trigger reflow to restart animation
+                box.style.animation = 'shake 0.4s';
+                return;
+            }
+            score = 0;
+            currentScoreEl.textContent = '0';
+            currentMatchRound = 0;
+            totalMatchedPairs = 0;
+            startMatchBtn.classList.remove('animate-bounce');
+            initMatchingGame();
+            showScreen('matchingScreen');
+        });
+
+        homeBtn.addEventListener('click', () => {
+            stopTimer();
+            showScreen('homeScreen');
+        });
+
+        document.querySelectorAll('.quitHomeBtn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                AudioFX.playClick();
+                stopTimer();
+                showScreen('homeScreen');
+            });
+        });
+
+        // --- STREAMING_CHUNK:Matching Game Logic... ---
+        const shapeOptionsContainer = document.getElementById('shapeOptionsContainer');
+        const matchWordTitle = document.getElementById('matchWordTitle');
+        const matchWordDesc = document.getElementById('matchWordDesc');
+        const matchTimerEl = document.getElementById('matchTimer');
+        const matchProgressEl = document.getElementById('matchProgress');
+        const matchProgressText = document.getElementById('matchProgressText');
+        const nextMatchBtn = document.getElementById('nextMatchBtn');
+        const finishMatchBtn = document.getElementById('finishMatchBtn');
+
+        function startMatchTimer() {
+            matchTimerValue = 7.0;
+            matchTimerEl.textContent = matchTimerValue.toFixed(1);
+            matchTimerEl.classList.replace('text-red-400', 'text-white');
+            matchTimerEl.parentElement.classList.replace('border-red-500', 'border-gray-500');
+
+            stopTimer();
+            timerInterval = setInterval(() => {
+                matchTimerValue -= 0.1;
+                
+                if (matchTimerValue <= 3.0) {
+                    matchTimerEl.parentElement.classList.replace('border-gray-500', 'border-red-500');
+                    matchTimerEl.classList.replace('text-white', 'text-red-400');
+                }
+
+                if (matchTimerValue <= 0) {
+                    matchTimerValue = 0;
+                    stopTimer();
+                    handleMatchTimeOut();
+                }
+                matchTimerEl.textContent = matchTimerValue.toFixed(1);
+            }, 100);
+        }
+
+        function showNextStepButton() {
+            if (currentMatchRound < shapeData.length - 1) {
+                nextMatchBtn.classList.remove('hidden');
+            } else {
+                finishMatchBtn.classList.remove('hidden');
+            }
+        }
+
+        function initMatchingGame() {
+            isSlideAnswered = false;
+            nextMatchBtn.classList.add('hidden');
+            finishMatchBtn.classList.add('hidden');
+            
+            updateMatchProgress();
+
+            const targetShape = shapeData[currentMatchRound];
+            if (!targetShape) return;
+
+            matchWordTitle.textContent = targetShape.name;
+            matchWordTitle.className = `text-4xl sm:text-6xl font-black heading-font text-slate-800 uppercase tracking-wide mb-2`;
+            matchWordDesc.textContent = targetShape.desc;
+
+            // Prepare 1 Correct Shape + 2 Distractors
+            const otherShapes = shapeData.filter(s => s.id !== targetShape.id);
+            const shuffledOthers = shuffleArray([...otherShapes]);
+            const choices = shuffleArray([targetShape, shuffledOthers[0], shuffledOthers[1]]);
+
+            renderShapeOptions(choices, targetShape.id);
+            startMatchTimer();
+        }
+
+        function updateMatchProgress() {
+            const totalPairs = shapeData.length;
+            const percentage = (totalMatchedPairs / totalPairs) * 100;
+            matchProgressEl.style.width = `${percentage}%`;
+            matchProgressText.textContent = `${totalMatchedPairs} / ${totalPairs}`;
+        }
+
+        function renderShapeOptions(choices, targetId) {
+            shapeOptionsContainer.innerHTML = '';
+
+            // Bright, vibrant palette presets for choice cards
+            const brightPalettes = [
+                { text: 'text-pink-600', bg: 'bg-pink-100/90', border: 'border-pink-400', hover: 'hover:border-pink-600' },
+                { text: 'text-emerald-600', bg: 'bg-emerald-100/90', border: 'border-emerald-400', hover: 'hover:border-emerald-600' },
+                { text: 'text-amber-600', bg: 'bg-amber-100/90', border: 'border-amber-400', hover: 'hover:border-amber-600' },
+                { text: 'text-cyan-600', bg: 'bg-cyan-100/90', border: 'border-cyan-400', hover: 'hover:border-cyan-600' },
+                { text: 'text-purple-600', bg: 'bg-purple-100/90', border: 'border-purple-400', hover: 'hover:border-purple-600' },
+                { text: 'text-rose-600', bg: 'bg-rose-100/90', border: 'border-rose-400', hover: 'hover:border-rose-600' },
+                { text: 'text-blue-600', bg: 'bg-blue-100/90', border: 'border-blue-400', hover: 'hover:border-blue-600' }
+            ];
+
+            const shuffledPalettes = shuffleArray([...brightPalettes]);
+
+            choices.forEach((shape, index) => {
+                const palette = shuffledPalettes[index % shuffledPalettes.length];
+                const optionCard = document.createElement('div');
+                optionCard.className = `match-option-card ${palette.bg} ${palette.text} border-4 ${palette.border} ${palette.hover} rounded-3xl p-4 flex flex-col items-center justify-center cursor-pointer w-full transition-all transform hover:scale-105 shadow-md active:scale-95`;
+                optionCard.dataset.id = shape.id;
+                optionCard.innerHTML = shape.svg;
+                
+                optionCard.addEventListener('click', () => handleOptionClick(optionCard, shape.id, targetId));
+                shapeOptionsContainer.appendChild(optionCard);
+            });
+        }
+
+        function handleOptionClick(cardEl, selectedId, targetId) {
+            if (isSlideAnswered || timerInterval === null) return;
+
+            if (selectedId === targetId) {
+                // Correct Match
+                isSlideAnswered = true;
+                stopTimer();
+                
+                cardEl.className = 'match-option-card bg-green-400 border-4 border-green-800 text-green-950 scale-105 rounded-3xl p-4 flex flex-col items-center justify-center cursor-pointer w-full transition-all transform shadow-md';
+                
+                let points = 10;
+                if (matchTimerValue > 3.0) points += 5; // Speed bonus
+                updateScore(points);
+                
+                totalMatchedPairs++;
+                updateMatchProgress();
+                
+                showNextStepButton();
+            } else {
+                // Wrong Match
+                cardEl.classList.add('bg-red-400', 'border-red-800', 'shake');
+                cardEl.style.pointerEvents = 'none';
+                updateScore(-2);
+                
+                setTimeout(() => {
+                    cardEl.classList.remove('shake');
+                }, 400);
+            }
+        }
+
+        function handleMatchTimeOut() {
+            isSlideAnswered = true;
+            const targetShape = shapeData[currentMatchRound];
+            
+            // Highlight the correct shape answer
+            const cards = shapeOptionsContainer.querySelectorAll('.match-option-card');
+            cards.forEach(card => {
+                card.style.pointerEvents = 'none';
+                if (card.dataset.id === targetShape.id) {
+                    card.className = 'match-option-card bg-green-400 border-4 border-green-800 text-green-950 scale-105 rounded-3xl p-4 flex flex-col items-center justify-center cursor-pointer w-full transition-all transform shadow-md';
+                } else {
+                    card.classList.add('opacity-50');
+                }
+            });
+
+            showNextStepButton();
+        }
+
+        nextMatchBtn.addEventListener('click', () => {
+            currentMatchRound++;
+            initMatchingGame();
+        });
+
+        finishMatchBtn.addEventListener('click', () => {
+            currentDrawingIndex = 0;
+            showScreen('drawingScreen');
+            initDrawingGame();
+        });
+
+        // --- STREAMING_CHUNK:Drawing Game Logic... ---
+        const drawTimerEl = document.getElementById('drawTimer');
+        const targetShapeNameEl = document.getElementById('targetShapeName');
+        const drawResultOverlay = document.getElementById('drawResultOverlay');
+        const drawResultText = document.getElementById('drawResultText');
+        const drawFeedbackText = document.getElementById('drawFeedbackText');
+        const nextDrawBtn = document.getElementById('nextDrawBtn');
+        const finishGameBtn = document.getElementById('finishGameBtn');
+        const colorBtns = document.querySelectorAll('.color-btn');
+
+        colorBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                colorBtns.forEach(b => b.classList.remove('active'));
+                const target = e.currentTarget;
+                target.classList.add('active');
+                strokeColor = target.dataset.color;
+            });
+        });
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            // Subtract toolbar height approx
+            const toolbar = container.querySelector('div.bg-gray-200');
+            canvas.height = container.clientHeight - (toolbar ? toolbar.clientHeight : 60); 
+            canvasRect = canvas.getBoundingClientRect();
+            redrawCanvas();
+        }
+
+        window.addEventListener('resize', () => {
+            if(currentScreen === 'drawingScreen') resizeCanvas();
+        });
+
+        function initDrawingGame() {
+            // Need slight delay for display flex to compute sizes correctly
+            setTimeout(resizeCanvas, 50); 
+            drawResultOverlay.classList.add('hidden');
+            drawResultOverlay.classList.remove('flex');
+            
+            const shapeId = drawingSequence[currentDrawingIndex];
+            const shapeObj = shapeData.find(s => s.id === shapeId);
+            targetShapeNameEl.textContent = shapeObj.name;
+            targetShapeNameEl.className = `text-3xl heading-font uppercase ${shapeObj.color}`;
+            
+            clearCanvasData();
+            startDrawTimer();
+        }
+
+        function startDrawTimer() {
+            drawTimerValue = 10.0;
+            drawTimerEl.textContent = drawTimerValue.toFixed(1);
+            drawTimerEl.classList.replace('text-red-400', 'text-white');
+            drawTimerEl.parentElement.classList.replace('border-red-500', 'border-gray-500');
+
+            stopTimer();
+            timerInterval = setInterval(() => {
+                drawTimerValue -= 0.1;
+                
+                if(drawTimerValue <= 3.0) {
+                     drawTimerEl.parentElement.classList.replace('border-gray-500', 'border-red-500');
+                     drawTimerEl.classList.replace('text-white', 'text-red-400');
+                     if(Math.floor(drawTimerValue*10)%2===0) drawTimerEl.parentElement.classList.add('scale-105');
+                     else drawTimerEl.parentElement.classList.remove('scale-105');
+                }
+
+                if (drawTimerValue <= 0) {
+                    drawTimerValue = 0;
+                    stopTimer();
+                    drawTimerEl.parentElement.classList.remove('scale-105');
+                    evaluateDrawing(false); 
+                }
+                drawTimerEl.textContent = drawTimerValue.toFixed(1);
+            }, 100);
+        }
+
+        // Drawing Events
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', handleTouchStart, {passive: false});
+        canvas.addEventListener('touchmove', handleTouchMove, {passive: false});
+        canvas.addEventListener('touchend', stopDrawing);
+        
+        function getPos(evt) {
+            if (!canvasRect) canvasRect = canvas.getBoundingClientRect();
+            let clientX = evt.clientX;
+            let clientY = evt.clientY;
+            
+            if (evt.touches && evt.touches.length > 0) {
+                clientX = evt.touches[0].clientX;
+                clientY = evt.touches[0].clientY;
+            }
+            
+            return {
+                x: clientX - canvasRect.left,
+                y: clientY - canvasRect.top
+            };
+        }
+
+        function handleTouchStart(e) {
+            e.preventDefault(); 
+            startDrawing(e);
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault(); 
+            draw(e);
+        }
+
+        function startDrawing(e) {
+            if (timerInterval === null) return; 
+            isDrawing = true;
+            const pos = getPos(e);
+            currentPath = { color: strokeColor, width: strokeWidth, points: [pos] };
+            
+            ctx.beginPath();
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = strokeWidth;
+            ctx.moveTo(pos.x, pos.y);
+            // Draw dot for single tap
+            ctx.lineTo(pos.x+1, pos.y+1);
+            ctx.stroke();
+        }
+
+        function draw(e) {
+            if (!isDrawing || timerInterval === null) return;
+            const pos = getPos(e);
+            currentPath.points.push(pos);
+            
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            if (!isDrawing) return;
+            isDrawing = false;
+            if (currentPath && currentPath.points.length > 0) {
+                paths.push(currentPath);
+            }
+            currentPath = null;
+        }
+
+        function clearCanvasData() {
+            paths = [];
+            currentPath = null;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function redrawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            paths.forEach(path => {
+                if (path.points.length === 0) return;
+                ctx.beginPath();
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.strokeStyle = path.color;
+                ctx.lineWidth = path.width;
+                ctx.moveTo(path.points[0].x, path.points[0].y);
+                for (let i = 1; i < path.points.length; i++) {
+                    ctx.lineTo(path.points[i].x, path.points[i].y);
+                }
+                ctx.stroke();
+            });
+        }
+
+        document.getElementById('clearBtn').addEventListener('click', clearCanvasData);
+        
+        document.getElementById('undoBtn').addEventListener('click', () => {
+            paths.pop();
+            redrawCanvas();
+        });
+
+        document.getElementById('submitDrawBtn').addEventListener('click', () => {
+            if (timerInterval) evaluateDrawing(true);
+        });
+
+        function analyzeDrawnShape(paths, targetShapeId) {
+            let allPoints = [];
+            paths.forEach(p => {
+                allPoints = allPoints.concat(p.points);
+            });
+
+            if (allPoints.length < 10) {
+                return { isCorrect: false, detected: 'Nothing', feedback: 'Please draw a shape on the canvas!' };
+            }
+
+            // 1. Calculate Bounding Box
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            allPoints.forEach(pt => {
+                if (pt.x < minX) minX = pt.x;
+                if (pt.x > maxX) maxX = pt.x;
+                if (pt.y < minY) minY = pt.y;
+                if (pt.y > maxY) maxY = pt.y;
+            });
+
+            const width = maxX - minX;
+            const height = maxY - minY;
+
+            if (width < 25 || height < 25) {
+                return { isCorrect: false, detected: 'Tiny mark', feedback: 'Draw a larger shape on the canvas!' };
+            }
+
+            const aspectRatio = width / height;
+
+            // 2. Uniform Resampling
+            const numSamples = 60;
+            let resampled = resamplePoints(allPoints, numSamples);
+
+            // 3. Centroid and Radial Geometry
+            let cx = 0, cy = 0;
+            resampled.forEach(pt => { cx += pt.x; cy += pt.y; });
+            cx /= numSamples;
+            cy /= numSamples;
+
+            let radii = resampled.map(pt => Math.hypot(pt.x - cx, pt.y - cy));
+            let meanR = radii.reduce((a, b) => a + b, 0) / numSamples;
+            let stdR = Math.sqrt(radii.reduce((a, b) => a + Math.pow(b - meanR, 2), 0) / numSamples);
+            let normStdR = stdR / meanR;
+
+            // 4. Shoelace Area & Perimeter
+            let area = 0;
+            let perimeter = 0;
+            for (let i = 0; i < numSamples; i++) {
+                let j = (i + 1) % numSamples;
+                area += resampled[i].x * resampled[j].y;
+                area -= resampled[j].x * resampled[i].y;
+                perimeter += Math.hypot(resampled[j].x - resampled[i].x, resampled[j].y - resampled[i].y);
+            }
+            area = Math.abs(area) / 2;
+            let circularity = (4 * Math.PI * area) / (perimeter * perimeter);
+
+            // 5. Corner and Radial Peak Detection
+            let peaks = 0;
+            for (let i = 0; i < numSamples; i++) {
+                let prev = radii[(i - 2 + numSamples) % numSamples];
+                let curr = radii[i];
+                let next = radii[(i + 2) % numSamples];
+                if (curr > prev && curr > next && (curr - meanR) > stdR * 0.25) {
+                    peaks++;
+                }
+            }
+
+            let sharpCorners = 0;
+            for (let i = 0; i < numSamples; i++) {
+                let p1 = resampled[(i - 3 + numSamples) % numSamples];
+                let p2 = resampled[i];
+                let p3 = resampled[(i + 3) % numSamples];
+
+                let v1 = { x: p2.x - p1.x, y: p2.y - p1.y };
+                let v2 = { x: p3.x - p2.x, y: p3.y - p2.y };
+                let angle = Math.abs(Math.atan2(v2.y, v2.x) - Math.atan2(v1.y, v1.x));
+                if (angle > Math.PI) angle = 2 * Math.PI - angle;
+
+                if (angle > 0.85) { // ~48 degree turn
+                    sharpCorners++;
+                    i += 3;
+                }
+            }
+
+            // 6. Shape Classifier Rules
+            let detectedShape = 'unknown';
+
+            if (normStdR > 0.28 && (peaks >= 4 || sharpCorners >= 5 || circularity < 0.35)) {
+                detectedShape = 'star';
+            } else if (sharpCorners === 3 || peaks === 3 || (normStdR > 0.18 && sharpCorners <= 3 && circularity < 0.65)) {
+                detectedShape = 'triangle';
+            } else if (normStdR < 0.16 && sharpCorners <= 2 && aspectRatio >= 0.7 && aspectRatio <= 1.4) {
+                detectedShape = 'circle';
+            } else if (normStdR < 0.22 && sharpCorners <= 2 && (aspectRatio < 0.7 || aspectRatio > 1.4)) {
+                detectedShape = 'oval';
+            } else if (sharpCorners === 4 || peaks === 4 || (normStdR >= 0.12 && normStdR <= 0.28)) {
+                if (aspectRatio >= 0.75 && aspectRatio <= 1.33) {
+                    detectedShape = targetShapeId === 'diamond' ? 'diamond' : 'square';
+                } else {
+                    detectedShape = 'rectangle';
+                }
+            } else {
+                if (normStdR < 0.18 && aspectRatio >= 0.7 && aspectRatio <= 1.4) detectedShape = 'circle';
+                else if (aspectRatio < 0.65 || aspectRatio > 1.5) detectedShape = 'rectangle';
+                else if (peaks === 3) detectedShape = 'triangle';
+                else detectedShape = 'shape';
+            }
+
+            const isMatch = (detectedShape === targetShapeId) || 
+                            (targetShapeId === 'circle' && detectedShape === 'oval' && aspectRatio >= 0.8 && aspectRatio <= 1.25) ||
+                            (targetShapeId === 'oval' && detectedShape === 'circle') ||
+                            (targetShapeId === 'square' && detectedShape === 'rectangle' && aspectRatio >= 0.8 && aspectRatio <= 1.25) ||
+                            (targetShapeId === 'rectangle' && detectedShape === 'square') ||
+                            (targetShapeId === 'diamond' && (detectedShape === 'square' || detectedShape === 'diamond'));
+
+            const shapeNames = {
+                circle: 'Circle',
+                triangle: 'Triangle',
+                star: 'Star',
+                diamond: 'Diamond',
+                square: 'Square',
+                oval: 'Oval',
+                rectangle: 'Rectangle',
+                shape: 'Drawing'
+            };
+
+            const targetName = shapeNames[targetShapeId] || targetShapeId;
+
+            if (isMatch) {
+                return { isCorrect: true, feedback: `Awesome job drawing a ${targetName}!` };
+            } else {
+                return { 
+                    isCorrect: false, 
+                    feedback: `Nice try! Keep practicing drawing a ${targetName}!` 
+                };
+            }
+        }
+
+        function resamplePoints(points, numSamples) {
+            if (points.length === 0) return [];
+            let totalLen = 0;
+            for (let i = 1; i < points.length; i++) {
+                totalLen += Math.hypot(points[i].x - points[i-1].x, points[i].y - points[i-1].y);
+            }
+            if (totalLen === 0) return Array(numSamples).fill(points[0]);
+
+            let interval = totalLen / (numSamples - 1);
+            let newPoints = [points[0]];
+            let currentDist = 0;
+
+            for (let i = 1; i < points.length && newPoints.length < numSamples; i++) {
+                let d = Math.hypot(points[i].x - points[i-1].x, points[i].y - points[i-1].y);
+                if (currentDist + d >= interval) {
+                    let ratio = (interval - currentDist) / d;
+                    let nx = points[i-1].x + ratio * (points[i].x - points[i-1].x);
+                    let ny = points[i-1].y + ratio * (points[i].y - points[i-1].y);
+                    let pt = { x: nx, y: ny };
+                    newPoints.push(pt);
+                    points.splice(i, 0, pt);
+                    currentDist = 0;
+                } else {
+                    currentDist += d;
+                }
+            }
+
+            while (newPoints.length < numSamples) {
+                newPoints.push(points[points.length - 1]);
+            }
+            return newPoints;
+        }
+
+        function evaluateDrawing(submittedBeforeTimeout) {
+            stopTimer();
+            isDrawing = false; 
+            
+            drawResultOverlay.classList.remove('hidden');
+            drawResultOverlay.classList.add('flex');
+            nextDrawBtn.classList.add('hidden');
+            finishGameBtn.classList.add('hidden');
+
+            const targetShapeId = drawingSequence[currentDrawingIndex];
+            const result = analyzeDrawnShape(paths, targetShapeId);
+
+            if (result.isCorrect) {
+                drawResultText.textContent = "AWESOME! 🖌️";
+                drawResultText.className = "text-5xl heading-font text-green-500 mb-2 drop-shadow-md";
+                
+                let points = 25;
+                if (drawTimerValue > 5) {
+                    points += 10; 
+                    drawFeedbackText.textContent = result.feedback + " (+10 Speed Bonus!)";
+                    drawFeedbackText.className = "text-xl font-bold text-yellow-500 mb-6";
+                } else {
+                    drawFeedbackText.textContent = result.feedback;
+                    drawFeedbackText.className = "text-xl font-bold text-gray-500 mb-6";
+                }
+                updateScore(points);
+                triggerConfetti(800);
+            } else {
+                drawResultText.textContent = "QUITE GOOD! 👍";
+                drawResultText.className = "text-5xl heading-font text-blue-500 mb-2 drop-shadow-md";
+                drawFeedbackText.textContent = result.feedback;
+                drawFeedbackText.className = "text-xl font-bold text-gray-600 mb-6";
+            }
+
+            setTimeout(() => {
+                if (currentDrawingIndex < drawingSequence.length - 1) {
+                    nextDrawBtn.classList.remove('hidden');
+                } else {
+                    finishGameBtn.classList.remove('hidden');
+                    saveScore();
+                }
+            }, 1000);
+        }
+
+        nextDrawBtn.addEventListener('click', () => {
+            currentDrawingIndex++;
+            initDrawingGame();
+        });
+
+        finishGameBtn.addEventListener('click', () => {
+            showLeaderboard();
+        });
+
+        // --- STREAMING_CHUNK:Leaderboard Logic... ---
+        const leaderboardBody = document.getElementById('leaderboardBody');
+        const finalScoreDisplay = document.getElementById('finalScoreDisplay');
+        const leaderboardClassSelect = document.getElementById('leaderboardClassSelect');
+
+        function saveScore() {
+            if (currentClass) {
+                leaderboard.push({
+                    classId: currentClass,
+                    score: score,
+                    date: new Date().toLocaleDateString()
+                });
+                
+                leaderboard.sort((a, b) => b.score - a.score);
+                if (leaderboard.length > 50) leaderboard = leaderboard.slice(0, 50);
+                
+                try {
+                    localStorage.setItem('shapeChallengeRaceBoard', JSON.stringify(leaderboard));
+                } catch(e) {
+                    console.warn("Storage failed", e);
+                }
+            }
+        }
+
+        function renderLeaderboard(filterClass = 'all') {
+            leaderboardBody.innerHTML = '';
+            
+            let filteredBoard = leaderboard;
+            if (filterClass !== 'all') {
+                filteredBoard = leaderboard.filter(entry => entry.classId === filterClass);
+            }
+
+            if (filteredBoard.length === 0) {
+                 leaderboardBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500 font-bold">No racers recorded yet!</td></tr>`;
+                 return;
+            }
+
+            filteredBoard.forEach((entry, index) => {
+                let rankVisual = `<span class="bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-bold">#${index + 1}</span>`;
+                if (index === 0) rankVisual = '🥇 1st';
+                if (index === 1) rankVisual = '🥈 2nd';
+                if (index === 2) rankVisual = '🥉 3rd';
+                
+                // Highlight current run
+                const isRecent = entry.score === score && entry.classId === currentClass && filterClass === 'all';
+                const rowClass = isRecent ? 'bg-yellow-200 border-l-8 border-yellow-500' : 'border-b border-gray-200 hover:bg-gray-100';
+
+                const tr = document.createElement('tr');
+                tr.className = rowClass;
+                tr.innerHTML = `
+                    <td class="p-3 font-bold">${rankVisual}</td>
+                    <td class="p-3 font-bold text-blue-700">Crew ${entry.classId}</td>
+                    <td class="p-3 font-black text-2xl text-gray-800">${entry.score}</td>
+                    <td class="p-3 text-sm text-gray-500 font-bold hidden sm:table-cell">${entry.date}</td>
+                `;
+                leaderboardBody.appendChild(tr);
+            });
+        }
+
+        function showLeaderboard() {
+            showScreen('leaderboardScreen');
+            finalScoreDisplay.querySelector('span').textContent = score;
+            triggerConfetti(3000); 
+            
+            leaderboardClassSelect.value = 'all';
+            renderLeaderboard('all');
+        }
+
+        document.getElementById('showLeaderboardBtn').addEventListener('click', () => {
+            score = 0; 
+            currentClass = null; 
+            showLeaderboard();
+            finalScoreDisplay.parentElement.classList.add('hidden'); 
+            document.getElementById('playAgainBtn').textContent = "BACK TO PIT STOP";
+        });
+
+        leaderboardClassSelect.addEventListener('change', (e) => {
+            renderLeaderboard(e.target.value);
+        });
+
+        document.getElementById('clearLeaderboardBtn').addEventListener('click', () => {
+            leaderboard = [];
+            try {
+                localStorage.removeItem('shapeChallengeRaceBoard');
+            } catch(e) {
+                console.warn("Storage clear failed", e);
+            }
+            renderLeaderboard(leaderboardClassSelect.value);
+        });
+
+        document.getElementById('playAgainBtn').addEventListener('click', () => {
+            finalScoreDisplay.parentElement.classList.remove('hidden');
+            document.getElementById('playAgainBtn').textContent = "RACE AGAIN 🔄";
+            showScreen('homeScreen');
+             
+            classBtns.forEach(b => {
+                b.classList.remove('selected');
+            });
+            currentClass = null;
+            startMatchBtn.classList.remove('animate-bounce');
+            
+            // Reset Pit Pass Badge Preview
+            document.getElementById('badgeTitle').textContent = 'NO CREW SELECTED';
+            document.getElementById('badgeTitle').className = 'heading-font text-2xl text-yellow-400';
+            document.getElementById('badgeIcon').textContent = '🏎️';
+            document.getElementById('badgeStatus').textContent = 'Tap a car above!';
+            document.getElementById('badgeStatus').className = 'text-xs font-black bg-gray-800 text-gray-400 px-3 py-1.5 rounded-lg uppercase tracking-wide border border-gray-700';
+            document.getElementById('crewBadgePreview').className = 'mt-4 bg-gray-950/80 border-2 border-dashed border-gray-700 rounded-2xl p-3 flex flex-col sm:flex-row items-center justify-between text-left gap-3 transition-all duration-300';
+
+            const box = document.getElementById('crewSelectionBox');
+            box.classList.remove('border-red-500', 'bg-red-900/30');
+        });
+
+        // --- STREAMING_CHUNK:Effects... ---
+        // Confetti Engine
+        const confettiCanvas = document.getElementById('confetti');
+        const cctx = confettiCanvas.getContext('2d');
+        let confettiParticles = [];
+        let animationId;
+
+        function triggerConfetti(duration) {
+            confettiCanvas.style.display = 'block';
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+            
+            confettiParticles = [];
+            // Race/Vibrant colors
+            const colors = ['#FF3366', '#FF9933', '#33CCFF', '#4ade80', '#fbbf24', '#ffffff'];
+            
+            for (let i = 0; i < 150; i++) {
+                confettiParticles.push({
+                    x: Math.random() * confettiCanvas.width,
+                    y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+                    size: Math.random() * 12 + 6,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speedY: Math.random() * 4 + 3,
+                    speedX: Math.random() * 4 - 2,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 15 - 7.5,
+                    shape: Math.random() > 0.5 ? 'rect' : 'circle' // Mixed shapes
+                });
+            }
+
+            cancelAnimationFrame(animationId);
+            renderConfetti();
+
+            setTimeout(() => {
+                cancelAnimationFrame(animationId);
+                cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+                confettiCanvas.style.display = 'none';
+            }, duration);
+        }
+
+        function renderConfetti() {
+            cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            
+            confettiParticles.forEach(p => {
+                p.y += p.speedY;
+                p.x += p.speedX;
+                p.rotation += p.rotationSpeed;
+                
+                cctx.save();
+                cctx.translate(p.x, p.y);
+                cctx.rotate(p.rotation * Math.PI / 180);
+                cctx.fillStyle = p.color;
+                
+                if (p.shape === 'rect') {
+                    cctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                } else {
+                    cctx.beginPath();
+                    cctx.arc(0, 0, p.size/2, 0, Math.PI * 2);
+                    cctx.fill();
+                }
+                
+                cctx.restore();
+            });
+            
+            animationId = requestAnimationFrame(renderConfetti);
+        }
+    </script>
+</body>
+</html>
